@@ -1,11 +1,28 @@
-var express = require("express");
+var http = require('http');
+var moment = require('moment');
 
-var app = express();
+http.createServer(function (req, res) {
+  var time;
 
-app.get('/', function (req, res) {
-  res.send('Hello World!');
-});
+  console.log('Incoming request to ' + req.url);
 
-app.listen(8080, function () {
-  console.log('Example app listening on port 8080!');
-});
+  var preparedUrl = req.url.substring(1).split('%20').join(' ');
+
+  if (isNaN(+preparedUrl)) {
+    time = moment(preparedUrl);
+
+  } else {
+    time = moment(+preparedUrl);
+  }
+
+  var timeNatural = time.format("MMMM Do YYYY");
+  var timeUnix = time.format("x");
+
+  if ((timeNatural || timeUnix) === "Invalid date") {
+    timeUnix = null;
+    timeNatural = null;
+  }
+
+  res.end('{"unix":' + timeUnix + ', "natural": "' + timeNatural + '"}');
+
+}).listen(process.env.PORT, process.env.IP);
